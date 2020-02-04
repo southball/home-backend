@@ -4,6 +4,7 @@ const nodeExternals = require('webpack-node-externals');
 module.exports = {
     entry: './src/index.ts',
     devtool: 'inline-source-map',
+    mode: 'development',
     module: {
         rules: [
             {
@@ -13,12 +14,13 @@ module.exports = {
             },
         ],
     },
+    target: "node",
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js' ],
+        extensions: ['.tsx', '.ts', '.js'],
     },
     output: {
         filename: 'server.js',
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, 'build'),
     },
     externals: [nodeExternals()],
 };
