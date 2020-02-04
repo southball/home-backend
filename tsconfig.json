@@ -1,0 +1,7 @@
+{
+  "compilerOptions:": {
+    "noImplicitAny": true,
+    "module": "node",
+    "target": "es6"
+  }
+}
