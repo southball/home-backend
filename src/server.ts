@@ -1,11 +1,14 @@
 import * as express from 'express';
 import * as path from 'path';
 
-import createApiRouter from './api';
+import createApiRouter from './api/api';
 
-interface ServerConfig {
+export interface ServerConfig {
     staticPath: string;
     frontendPath: string;
+    googleClientId: string;
+    googleClientSecret: string;
+    googleClientCallbackURL: string;
 }
 
 const createServer = (serverConfig: ServerConfig) => {
@@ -14,7 +17,7 @@ const createServer = (serverConfig: ServerConfig) => {
     const staticPath = path.resolve(serverConfig.staticPath);
     const frontendPath = path.resolve(serverConfig.frontendPath);
 
-    const apiRouter = createApiRouter();
+    const apiRouter = createApiRouter(serverConfig);
     app.use('/api', apiRouter);
 
     // Serve the static files in the folder.
