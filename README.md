@@ -9,3 +9,6 @@ You can copy `.env.sample` to `.env` and start modifying. The configurations are
 - `FRONTEND_PATH`: This is the file which is served as the website. This should be an absolute path to the `index.html` built in the `home-frontend` project.
 - `STATIC_PATH`: This is the folder served as `https://website/static`. This should be an absolute path to the `static` folder built in the `home-frontend` project.
 - `PORT`: This is the port which the content is to be served at.
+- `GOOGLE_CLIENT_ID`: The Google OAuth2 client ID.
+- `GOOGLE_CLIENT_SECRET`: The Google OAuth2 client secret.
+- `GOOGLE_CLIENT_CALLBACK_URL`: The OAuth2 callback URL for Google. Should be pointing to `https://website/api/auth/oauth2callback`.
