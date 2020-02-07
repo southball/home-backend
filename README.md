@@ -12,3 +12,5 @@ You can copy `.env.sample` to `.env` and start modifying. The configurations are
 - `GOOGLE_CLIENT_ID`: The Google OAuth2 client ID.
 - `GOOGLE_CLIENT_SECRET`: The Google OAuth2 client secret.
 - `GOOGLE_CLIENT_CALLBACK_URL`: The OAuth2 callback URL for Google. Should be pointing to `https://website/api/auth/oauth2callback`.
+- `DATABASE_PATH`: The path to a Sqlite3 database for storing application data.
+- `FILES_FOLDER`: The folder containing the files to be shown in the 'Files' page.

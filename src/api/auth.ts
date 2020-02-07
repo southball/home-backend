@@ -34,16 +34,26 @@ const createAuthRouter = (
         const { data } = await client.request({url: 'https://openidconnect.googleapis.com/v1/userinfo'});
         const { email, name } = data;
 
-        const user = await User.findOrCreate({
+        // Find user by email.
+        const [user, created] = await User.findOrCreate({
             where: {email},
             defaults: {
-                displayName: name,
                 email,
+                displayName: name,
                 permissionLevel: 'visitor'
             }
         });
 
-        // TODO generate session token and pass to user
+        // For development purposes
+        // TODO remove auto admin grant
+        user.permissionLevel = 'admin';
+
+        await user.updateSession();
+
+        // Pass session ID to user.
+        res.cookie('session-token', user.lastSessionId);
+        res.cookie('session-permissionLevel', user.permissionLevel);
+        res.redirect('/');
     });
 
     return router;

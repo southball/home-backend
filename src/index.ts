@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import createServer from './server';
+import Database from './database';
 
 dotenv.config();
 
@@ -10,6 +11,10 @@ const staticPath: string = process.env.STATIC_PATH as string;
 const googleClientId = process.env.GOOGLE_CLIENT_ID as string;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET as string;
 const googleClientCallbackURL = process.env.GOOGLE_CLIENT_CALLBACK_URL as string;
+
+const databasePath = process.env.DATABASE_PATH as string;
+
+Database.init(databasePath);
 
 const app = createServer({
     frontendPath,
