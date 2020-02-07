@@ -1,7 +1,39 @@
-import {Router} from 'express';
+import {Router, RequestHandler} from 'express';
 import {OAuth2Client} from 'google-auth-library'
 
 import User from '../models/user';
+
+export enum AuthLevel {
+    NONE = -1,
+    VISITOR = 0,
+    USER = 1,
+    ADMIN = 2
+}
+
+export function toAuthLevel(permissionLevel?: string): AuthLevel {
+    if (permissionLevel === 'visitor')
+        return AuthLevel.VISITOR;
+    if (permissionLevel === 'user')
+        return AuthLevel.USER;
+    if (permissionLevel === 'admin')
+        return AuthLevel.ADMIN;
+    return AuthLevel.NONE;
+}
+
+export function authMiddleware(requiredLevel: AuthLevel): RequestHandler {
+    return async (req, res, next) => {
+        const token = req.query.token || '';
+        const user = await User.findOne({where:{lastSessionId: token}});
+        if (user && toAuthLevel(user.permissionLevel) >= requiredLevel) {
+            next();
+        } else {
+            res.status(403)
+                .json({
+                    message: 'Permission denied.'
+                });
+        }
+    };
+}
 
 const createAuthRouter = (
     googleClientId: string,

@@ -9,6 +9,7 @@ export interface ServerConfig {
     googleClientId: string;
     googleClientSecret: string;
     googleClientCallbackURL: string;
+    filesFolder: string;
 }
 
 const createServer = (serverConfig: ServerConfig) => {
