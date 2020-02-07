@@ -12,8 +12,12 @@ const createApiRouter: (config: ServerConfig) => Router = (config: ServerConfig)
 
     router.use('/auth', createAuthRouter(config.googleClientId, config.googleClientSecret, config.googleClientCallbackURL));
 
+    router.all('*', (req, res) => {
+        res.status(404)
+            .json({message: '404 Not Found'});
+    });
+
     return router;
 };
 
 export default createApiRouter;
-
