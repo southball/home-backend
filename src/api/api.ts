@@ -5,6 +5,16 @@ import {ServerConfig} from "../server";
 
 import createAuthRouter, {AuthLevel, authMiddleware} from './auth';
 import * as path from "path";
+import File from "../models/file";
+import * as assert from "assert";
+import * as bodyParser from 'body-parser';
+import User from "../models/user";
+
+interface FileEntry {
+    filename: string;
+    type: string;
+    tags: string[];
+}
 
 const createApiRouter: (config: ServerConfig) => Router = (config: ServerConfig) => {
     const router = Router();
@@ -21,6 +31,7 @@ const createApiRouter: (config: ServerConfig) => Router = (config: ServerConfig)
 
     router.get('/files', authMiddleware(AuthLevel.USER), async (req, res) => {
         const target = path.resolve(config.filesFolder, req.query.path || '');
+        const targetRel = path.relative(config.filesFolder, target);
         if (!target.startsWith(config.filesFolder)) {
             res.status(403)
                 .json({success: false, message: '403 Permission Denied'});
@@ -32,18 +43,34 @@ const createApiRouter: (config: ServerConfig) => Router = (config: ServerConfig)
             if (!stats?.isDirectory())
                 throw "Target is not directory.";
 
+            const tagMap = new Map<string, string[]>();
+            const tagEntries = await File.findAll({ where: {folder: targetRel} });
+            for (const entry of tagEntries) {
+                tagMap.set(entry.filename, JSON.parse(entry.tags) as string[]);
+            }
+
             const files = await fs.promises.readdir(target);
-            const rawEntries = await Promise.all(files.map(async (filename) => {
+            const rawEntries: (FileEntry | null)[] = await Promise.all(files.map(async (filename) => {
                 const absolutePath = path.resolve(target, filename);
                 const fileStats = await fs.promises.lstat(absolutePath);
                 if (fileStats.isFile())
-                    return {filename, type: 'file', tags: ["file-tag1", "file-tag2", "file-tag3"]};
+                    return {filename, type: 'file', tags: []};
                 else if (fileStats.isDirectory())
-                    return {filename, type: 'directory', tags: ["dir-tag1", "dir-tag2"]};
+                    return {filename, type: 'directory', tags: []};
                 else
                     return null;
             }));
-            const entries = rawEntries.filter((entry) => entry !== null);
+            const entries = rawEntries
+                .filter((entry) => entry !== null)
+                .map((entry: FileEntry) => {
+                    // Add tags if found.
+                    const tags = tagMap.get(entry.filename);
+                    if (tags) {
+                        return {...entry, tags};
+                    } else {
+                        return entry;
+                    }
+                });
 
             res.json({
                 success: true,
@@ -56,12 +83,126 @@ const createApiRouter: (config: ServerConfig) => Router = (config: ServerConfig)
         }
     });
 
+    router.get('/tags', authMiddleware(AuthLevel.USER), async (req, res) => {
+        const files = await File.findAll({});
+        const tags = new Set();
+        console.log(files.map((f) => f.toJSON()));
+        files.map((file) => JSON.parse(file.tags) as string[])
+            .forEach((fileTags) => {
+                fileTags.forEach((tag) => {
+                    tags.add(tag);
+                });
+            });
+        res.json({
+            status: 'success',
+            tags: [...tags].sort()
+        });
+    });
+
+    router.post('/tags/set', authMiddleware(AuthLevel.USER), bodyParser.json(), async (req, res) => {
+        const filePath = req.body.file;
+        const tags = req.body.tags;
+
+        console.log(req.body);
+
+        if (!filePath || !Array.isArray(tags) || !tags.every((val) => typeof val === 'string')) {
+            res.status(400)
+                .json({
+                    success: false,
+                    message: 'The query should contain the file as string and tags as a string array.'
+                });
+            return;
+        }
+
+        const absolutePath = path.resolve(config.filesFolder, filePath);
+
+        if (!absolutePath.startsWith(config.filesFolder)) {
+            res.status(403)
+                .json({
+                    success: false,
+                    message: 'The file you are attempting to tag cannot be accessed.'
+                });
+            console.log(config.filesFolder, absolutePath);
+            return;
+        }
+
+        const folder = path.relative(config.filesFolder, path.dirname(absolutePath));
+        const filename = path.basename(absolutePath);
+
+        const [fileEntry] = await File.findOrCreate({
+            where: {folder, filename},
+            defaults: {
+                folder,
+                filename,
+                tags: '[]',
+            },
+        });
+
+        const newTags = [...new Set(tags)].sort();
+        fileEntry.tags = JSON.stringify(newTags);
+        await fileEntry.save();
+
+        res.json({
+            success: true,
+            file: fileEntry.toJSON()
+        });
+    });
+
+    router.get('/users', authMiddleware(AuthLevel.ADMIN), async (req, res) => {
+        const users = await User.findAll({});
+        res.json({
+            success: true,
+            users: users.map((user) => user.toJSON()),
+        });
+    });
+
+    router.post('/user/edit', authMiddleware(AuthLevel.ADMIN), bodyParser.json(), async (req, res) => {
+        const email = req.body.email;
+        const permissionLevel = req.body.permissionLevel;
+
+        if (!email || !permissionLevel) {
+            res.status(400)
+                .json({
+                    success: false,
+                    message: 'The email or permissionLevel is not provided.'
+                });
+            return;
+        }
+
+        const user = await User.findOne({where: {email}});
+
+        if (!user) {
+            res.status(400)
+                .json({
+                    success: false,
+                    message: 'User not found.'
+                });
+            return;
+        }
+
+        console.log('%s to %s', user.permissionLevel, permissionLevel);
+        user.permissionLevel = permissionLevel;
+        await user.save();
+
+        res.json({
+            success: true,
+            user: user.toJSON(),
+        });
+    });
+
+    router.get('/announcements', (req, res) => {
+    });
+
+    router.post('/announcement/create', authMiddleware(AuthLevel.ADMIN), (req, res) => {
+
+    });
+
+    router.post('/announcement/edit', authMiddleware(AuthLevel.ADMIN), (req, res) => {
+
+    });
+
     router.use('/auth',
         createAuthRouter(config.googleClientId, config.googleClientSecret, config.googleClientCallbackURL));
-
-    router.get('/files', authMiddleware(AuthLevel.USER), (req, res) => {
-        res.end('OK "' + req.params.path + '"');
-    });
 
     router.all('*', (req, res) => {
         res.status(404)

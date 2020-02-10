@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize-typescript';
 import User from './models/user';
+import File from "./models/file";
 
 export default class Database {
     private static sequelize: Sequelize;
@@ -17,6 +18,7 @@ export default class Database {
             });
 
             sequelize.addModels([
+                File,
                 User,
             ]);
 
