@@ -4,12 +4,16 @@ import * as path from 'path';
 import createApiRouter from './api/api';
 
 export interface ServerConfig {
+    // Required
     staticPath: string;
     frontendPath: string;
     googleClientId: string;
     googleClientSecret: string;
     googleClientCallbackURL: string;
     filesFolder: string;
+
+    // Optional
+    adminEmail?: string;
 }
 
 const createServer = (serverConfig: ServerConfig) => {

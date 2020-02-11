@@ -2,6 +2,7 @@ import {Router, RequestHandler} from 'express';
 import {OAuth2Client} from 'google-auth-library'
 
 import User from '../models/user';
+import {RouterCreator} from './api';
 
 export enum AuthLevel {
     NONE = -1,
@@ -35,19 +36,17 @@ export function authMiddleware(requiredLevel: AuthLevel): RequestHandler {
     };
 }
 
-const createAuthRouter = (
-    googleClientId: string,
-    googleClientSecret: string,
-    googleClientCallbackURL: string,
-) => {
+const createAuthRouter: RouterCreator = (config) => {
     const router = Router();
+
+    const {googleClientId, googleClientSecret, googleClientCallbackURL} = config;
     const getOAuth2Client = () => new OAuth2Client(
         googleClientId,
         googleClientSecret,
         googleClientCallbackURL,
     );
 
-    router.get('/login', (req, res) => {
+    router.get('/auth/login', (req, res) => {
         const client = getOAuth2Client();
         const url = client.generateAuthUrl({
             access_type: 'offline',
@@ -57,7 +56,7 @@ const createAuthRouter = (
         res.redirect(url);
     });
 
-    router.get('/oauth2callback', async (req, res) => {
+    router.get('/auth/oauth2callback', async (req, res) => {
         const client = getOAuth2Client();
         const code: string = req.query.code;
         const {tokens} = await client.getToken(code);
@@ -67,7 +66,7 @@ const createAuthRouter = (
         const { email, name } = data;
 
         // Find user by email.
-        const [user, created] = await User.findOrCreate({
+        const [user] = await User.findOrCreate({
             where: {email},
             defaults: {
                 email,
@@ -76,9 +75,9 @@ const createAuthRouter = (
             }
         });
 
-        // For development purposes
-        // TODO remove auto admin grant
-        user.permissionLevel = 'admin';
+        if (email === config.adminEmail) {
+            user.permissionLevel = 'admin';
+        }
 
         await user.updateSession();
 
