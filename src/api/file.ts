@@ -19,7 +19,9 @@ const createFileRouter: RouterCreator = (config) => {
     // A separate router is needed for custom 404 handling.
     const fileRouter = Router();
     fileRouter.use(authMiddleware(AuthLevel.USER));
-    fileRouter.use(express.static(config.filesFolder));
+    fileRouter.use(express.static(config.filesFolder, {
+        dotfiles: 'allow',
+    }));
     fileRouter.all('*', (req, res) => {
         res.status(404)
             .end('404 File Not Found');

@@ -26,7 +26,9 @@ const createServer = (serverConfig: ServerConfig) => {
     app.use('/api', apiRouter);
 
     // Serve the static files in the folder.
-    app.use('/static', express.static(staticPath));
+    app.use('/static', express.static(staticPath, {
+        dotfiles: 'allow',
+    }));
 
     // This is required to make sure that the BrowserRouter in react-router works.
     app.use('*', (req, res) => {
