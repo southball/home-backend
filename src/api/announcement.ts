@@ -75,7 +75,7 @@ const createAnnouncementRouter: RouterCreator = () => {
                     announcement.title = body.title;
                 if (body.content)
                     announcement.content = body.content;
-                if (body.priority)
+                if (typeof body.priority !== 'undefined')
                     announcement.priority = +body.priority;
 
                 await announcement.save();
