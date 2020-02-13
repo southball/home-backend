@@ -34,9 +34,13 @@ const createServer = (serverConfig: ServerConfig) => {
         dotfiles: 'allow',
     }));
 
+    app.use('/bundle.js', (req, res) => {
+        res.sendFile(path.resolve(frontendPath, 'bundle.js'));
+    });
+
     // This is required to make sure that the BrowserRouter in react-router works.
     app.use('*', (req, res) => {
-        res.sendFile(frontendPath);
+        res.sendFile(path.resolve(frontendPath, 'index.html'));
     });
 
     return app;
