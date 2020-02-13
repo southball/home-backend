@@ -35,6 +35,8 @@ const createServer = (serverConfig: ServerConfig) => {
         dotfiles: 'allow',
     }));
 
+    app.use('/fonts', express.static(path.resolve(frontendPath, 'fonts')));
+
     app.use('/bundle.js', (req, res) => {
         res.sendFile(path.resolve(frontendPath, 'bundle.js'));
     });
