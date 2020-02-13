@@ -71,11 +71,11 @@ const createUserRouter: RouterCreator = () => {
                 if (!user)
                     throw new ApiError('User not found.');
 
-                if (body.email)
+                if (typeof body.email !== 'undefined')
                     user.email = body.email;
-                if (body.permissionLevel)
+                if (typeof body.permissionLevel !== 'undefined')
                     user.permissionLevel = body.permissionLevel;
-                if (body.displayName)
+                if (typeof body.displayName !== 'undefined')
                     user.displayName = body.displayName;
 
                 await user.save();

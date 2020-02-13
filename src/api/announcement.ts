@@ -71,9 +71,9 @@ const createAnnouncementRouter: RouterCreator = () => {
                 if (!announcement)
                     throw new ApiError('Announcement not found.');
 
-                if (body.title)
+                if (typeof body.title !== 'undefined')
                     announcement.title = body.title;
-                if (body.content)
+                if (typeof body.content !== 'undefined')
                     announcement.content = body.content;
                 if (typeof body.priority !== 'undefined')
                     announcement.priority = +body.priority;
