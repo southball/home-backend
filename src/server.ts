@@ -15,6 +15,7 @@ export interface ServerConfig {
     postgresDB: string;
     postgresPassword: string;
     postgresHost: string;
+    domain: string;
 
     // Optional
     adminEmail?: string;

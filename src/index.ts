@@ -14,7 +14,8 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET as string;
 const googleClientCallbackURL = process.env.GOOGLE_CLIENT_CALLBACK_URL as string;
 
 const filesFolder = path.resolve(process.env.FILES_FOLDER as string);
-const databasePath = path.resolve(process.env.DATABASE_PATH as string);
+
+const domain = process.env.DOMAIN as string;
 
 const adminEmail = process.env.ADMIN_EMAIL as (string | undefined);
 
@@ -35,6 +36,7 @@ const serverConfig = {
     postgresUser,
     postgresPassword,
     postgresDB,
+    domain,
 };
 
 Database.init(serverConfig);
