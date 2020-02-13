@@ -11,6 +11,10 @@ export interface ServerConfig {
     googleClientSecret: string;
     googleClientCallbackURL: string;
     filesFolder: string;
+    postgresUser: string;
+    postgresDB: string;
+    postgresPassword: string;
+    postgresHost: string;
 
     // Optional
     adminEmail?: string;

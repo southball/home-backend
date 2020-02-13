@@ -18,9 +18,12 @@ const databasePath = path.resolve(process.env.DATABASE_PATH as string);
 
 const adminEmail = process.env.ADMIN_EMAIL as (string | undefined);
 
-Database.init(databasePath);
+const postgresHost = process.env.POSTGRES_HOST as string;
+const postgresUser = process.env.POSTGRES_USER as string;
+const postgresPassword = process.env.POSTGRES_PASSWORD as string;
+const postgresDB = process.env.POSTGRES_DB as string;
 
-const app = createServer({
+const serverConfig = {
     frontendPath,
     staticPath,
     googleClientId,
@@ -28,7 +31,15 @@ const app = createServer({
     googleClientCallbackURL,
     filesFolder,
     adminEmail,
-});
+    postgresHost,
+    postgresUser,
+    postgresPassword,
+    postgresDB,
+};
+
+Database.init(serverConfig);
+
+const app = createServer(serverConfig);
 
 console.log('Serving frontend from folder %s', frontendPath);
 console.log('Serving static from folder %s', staticPath);

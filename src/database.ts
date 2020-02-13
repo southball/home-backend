@@ -2,20 +2,21 @@ import { Sequelize } from 'sequelize-typescript';
 import User from './models/user';
 import File from './models/file';
 import Announcement from './models/announcement';
+import {ServerConfig} from "./server";
 
 export default class Database {
     private static sequelize: Sequelize;
 
     // TODO change to support other types of database
     // For development purposes, only supported database type is Sqlite3.
-    public static async init(path: string): Promise<void> {
+    public static async init(config: ServerConfig): Promise<void> {
         if (!Database.sequelize) {
             const sequelize = new Sequelize({
-                database: 'home',
-                dialect: 'sqlite',
-                username: 'root',
-                password: '',
-                storage: path,
+                dialect: 'postgres',
+                host: config.postgresHost,
+                database: config.postgresDB,
+                username: config.postgresUser,
+                password: config.postgresPassword,
             });
 
             sequelize.addModels([
